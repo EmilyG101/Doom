@@ -110,6 +110,8 @@ def check_shot():
         enemy_alive = False
         print("Enemy hit!")
 
+    gun_img = pygame.Surface((100, 50))
+    gun_img.fill((100, 100, 100))  # Gray rectangle for placeholder weapon
 
 
 while True:
@@ -129,6 +131,7 @@ while True:
     if keys[pygame.K_SPACE] and bullet_cooldown == 0:
         check_shot()
         bullet_cooldown = 20  # Short cooldown between shots
+        screen.blit(gun_img, (WIDTH//2 - 50, HEIGHT - 60))
     pygame.display.flip()
     clock.tick(60)
 
