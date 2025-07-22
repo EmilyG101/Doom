@@ -120,7 +120,7 @@ while True:
             exit()
     
     screen.fill((0, 0, 0))
-     movement()
+    movement()
     draw_rays()
     draw_enemy()
 
