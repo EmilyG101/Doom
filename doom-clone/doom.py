@@ -98,7 +98,7 @@ def draw_enemy():
         y = HEIGHT // 2 - proj_height // 2
         scaled_enemy = pygame.transform.scale(enemy_img, (enemy_img.get_width(), int(proj_height)))
         screen.blit(scaled_enemy, (x, y))
-        
+
 def check_shot():
     global enemy_alive
     if not enemy_alive:
@@ -108,7 +108,11 @@ def check_shot():
     angle_to_enemy = math.atan2(dy, dx)
     distance = math.hypot(dx, dy)
 
-    if distance < 800 and abs(angle_to_enemy - player_angle) < 0.1:
+    angle_diff = abs(angle_to_enemy - player_angle)
+    print(f"Shooting! distance={distance:.2f}, angle diff={angle_diff:.2f}")
+
+    # Easier tolerance for shooting
+    if distance < 800 and angle_diff < 0.3:
         enemy_alive = False
         print("Enemy hit!")
 
@@ -116,7 +120,7 @@ while True:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             exit()
-    
+
     screen.fill((0, 0, 0))
     movement()
     draw_rays()
@@ -129,6 +133,6 @@ while True:
         check_shot()
         bullet_cooldown = 20  # Short cooldown between shots
 
-    screen.blit(gun_img, (WIDTH//2 - 50, HEIGHT - 60))
+    screen.blit(gun_img, (WIDTH // 2 - 50, HEIGHT - 60))
     pygame.display.flip()
     clock.tick(60)
