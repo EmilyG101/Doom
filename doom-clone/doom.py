@@ -1,14 +1,5 @@
-# doom.py
 import pygame
 import math
-
-enemy_img = pygame.Surface((40, 60))
-enemy_img.fill((255, 0, 0))  # Red enemy placeholder
-
-bullet_cooldown = 0
-enemy_pos = [5.5 * TILE, 5.5 * TILE]
-enemy_alive = True
-
 
 WIDTH, HEIGHT = 640, 480
 FOV = math.pi / 3
@@ -44,6 +35,17 @@ clock = pygame.time.Clock()
 
 player_x, player_y = TILE + TILE//2, TILE + TILE//2
 player_angle = 0
+
+enemy_img = pygame.Surface((40, 60))
+enemy_img.fill((255, 0, 0))  # Red enemy placeholder
+
+enemy_pos = [5.5 * TILE, 5.5 * TILE]
+enemy_alive = True
+
+bullet_cooldown = 0
+
+gun_img = pygame.Surface((100, 50))
+gun_img.fill((100, 100, 100))  # Gray rectangle for placeholder weapon
 
 def draw_rays():
     cur_angle = player_angle - HALF_FOV
@@ -110,10 +112,6 @@ def check_shot():
         enemy_alive = False
         print("Enemy hit!")
 
-    gun_img = pygame.Surface((100, 50))
-    gun_img.fill((100, 100, 100))  # Gray rectangle for placeholder weapon
-
-
 while True:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -131,7 +129,7 @@ while True:
     if keys[pygame.K_SPACE] and bullet_cooldown == 0:
         check_shot()
         bullet_cooldown = 20  # Short cooldown between shots
-        screen.blit(gun_img, (WIDTH//2 - 50, HEIGHT - 60))
+
+    screen.blit(gun_img, (WIDTH//2 - 50, HEIGHT - 60))
     pygame.display.flip()
     clock.tick(60)
-
