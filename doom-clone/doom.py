@@ -123,7 +123,6 @@ while True:
     draw_enemy()
 
     keys = pygame.key.get_pressed()
-    global bullet_cooldown
     if bullet_cooldown > 0:
         bullet_cooldown -= 1
     if keys[pygame.K_SPACE] and bullet_cooldown == 0:
