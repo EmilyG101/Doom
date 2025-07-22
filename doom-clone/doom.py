@@ -2,6 +2,14 @@
 import pygame
 import math
 
+enemy_img = pygame.Surface((40, 60))
+enemy_img.fill((255, 0, 0))  # Red enemy placeholder
+
+bullet_cooldown = 0
+enemy_pos = [5.5 * TILE, 5.5 * TILE]
+enemy_alive = True
+
+
 WIDTH, HEIGHT = 640, 480
 FOV = math.pi / 3
 HALF_FOV = FOV / 2
@@ -70,14 +78,57 @@ def movement():
     if keys[pygame.K_d]:
         player_angle += angle_speed
 
+def draw_enemy():
+    global enemy_alive
+    if not enemy_alive:
+        return
+
+    dx = enemy_pos[0] - player_x
+    dy = enemy_pos[1] - player_y
+    distance = math.hypot(dx, dy)
+
+    angle_to_enemy = math.atan2(dy, dx)
+    angle_diff = angle_to_enemy - player_angle
+
+    if -HALF_FOV < angle_diff < HALF_FOV and distance > 30:
+        proj_height = PROJ_COEFF / (distance + 0.0001)
+        x = WIDTH // 2 + math.tan(angle_diff) * DIST - enemy_img.get_width() // 2
+        y = HEIGHT // 2 - proj_height // 2
+        scaled_enemy = pygame.transform.scale(enemy_img, (enemy_img.get_width(), int(proj_height)))
+        screen.blit(scaled_enemy, (x, y))
+        
+def check_shot():
+    global enemy_alive
+    if not enemy_alive:
+        return
+    dx = enemy_pos[0] - player_x
+    dy = enemy_pos[1] - player_y
+    angle_to_enemy = math.atan2(dy, dx)
+    distance = math.hypot(dx, dy)
+
+    if distance < 800 and abs(angle_to_enemy - player_angle) < 0.1:
+        enemy_alive = False
+        print("Enemy hit!")
+
+
+
 while True:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             exit()
     
     screen.fill((0, 0, 0))
-    movement()
+     movement()
     draw_rays()
+    draw_enemy()
+
+    keys = pygame.key.get_pressed()
+    global bullet_cooldown
+    if bullet_cooldown > 0:
+        bullet_cooldown -= 1
+    if keys[pygame.K_SPACE] and bullet_cooldown == 0:
+        check_shot()
+        bullet_cooldown = 20  # Short cooldown between shots
     pygame.display.flip()
     clock.tick(60)
 
