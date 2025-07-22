@@ -36,8 +36,15 @@ clock = pygame.time.Clock()
 player_x, player_y = TILE + TILE//2, TILE + TILE//2
 player_angle = 0
 
-enemy_img = pygame.Surface((40, 60))
-enemy_img.fill((255, 0, 0))  # Red enemy placeholder
+# Create a simple humanoid enemy sprite on transparent surface
+enemy_img = pygame.Surface((40, 60), pygame.SRCALPHA)
+# Draw head
+pygame.draw.circle(enemy_img, (255, 220, 177), (20, 12), 10)
+# Draw body
+pygame.draw.rect(enemy_img, (0, 0, 255), (10, 22, 20, 30))
+# Draw legs
+pygame.draw.rect(enemy_img, (0, 0, 180), (10, 52, 8, 8))
+pygame.draw.rect(enemy_img, (0, 0, 180), (22, 52, 8, 8))
 
 enemy_pos = [5.5 * TILE, 5.5 * TILE]
 enemy_alive = True
@@ -46,6 +53,9 @@ bullet_cooldown = 0
 
 gun_img = pygame.Surface((100, 50))
 gun_img.fill((100, 100, 100))  # Gray rectangle for placeholder weapon
+
+# List of bullets: each bullet is a dict with x, y, angle
+bullets = []
 
 def draw_rays():
     cur_angle = player_angle - HALF_FOV
@@ -99,22 +109,33 @@ def draw_enemy():
         scaled_enemy = pygame.transform.scale(enemy_img, (enemy_img.get_width(), int(proj_height)))
         screen.blit(scaled_enemy, (x, y))
 
-def check_shot():
+def check_bullet_hit(bullet):
     global enemy_alive
     if not enemy_alive:
-        return
-    dx = enemy_pos[0] - player_x
-    dy = enemy_pos[1] - player_y
-    angle_to_enemy = math.atan2(dy, dx)
+        return False
+    dx = enemy_pos[0] - bullet['x']
+    dy = enemy_pos[1] - bullet['y']
     distance = math.hypot(dx, dy)
-
-    angle_diff = abs(angle_to_enemy - player_angle)
-    print(f"Shooting! distance={distance:.2f}, angle diff={angle_diff:.2f}")
-
-    # Easier tolerance for shooting
-    if distance < 800 and angle_diff < 0.3:
+    if distance < 20:  # hit radius
         enemy_alive = False
-        print("Enemy hit!")
+        print("Enemy hit by bullet!")
+        return True
+    return False
+
+def update_bullets():
+    # Move bullets forward and draw them
+    speed = 10
+    for bullet in bullets[:]:
+        bullet['x'] += speed * math.cos(bullet['angle'])
+        bullet['y'] += speed * math.sin(bullet['angle'])
+        # Draw bullet as small circle
+        pygame.draw.circle(screen, (255, 255, 0), (int(bullet['x']), int(bullet['y'])), 5)
+        # Check collision with enemy
+        if check_bullet_hit(bullet):
+            bullets.remove(bullet)
+        # Remove bullets outside map bounds
+        elif bullet['x'] < 0 or bullet['x'] > MAP_WIDTH or bullet['y'] < 0 or bullet['y'] > MAP_HEIGHT:
+            bullets.remove(bullet)
 
 while True:
     for event in pygame.event.get():
@@ -130,8 +151,11 @@ while True:
     if bullet_cooldown > 0:
         bullet_cooldown -= 1
     if keys[pygame.K_SPACE] and bullet_cooldown == 0:
-        check_shot()
-        bullet_cooldown = 20  # Short cooldown between shots
+        # Spawn a bullet at player pos with player angle
+        bullets.append({'x': player_x, 'y': player_y, 'angle': player_angle})
+        bullet_cooldown = 20  # cooldown frames
+
+    update_bullets()
 
     screen.blit(gun_img, (WIDTH // 2 - 50, HEIGHT - 60))
     pygame.display.flip()
